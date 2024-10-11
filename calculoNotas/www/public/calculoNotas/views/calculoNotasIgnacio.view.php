@@ -1,6 +1,6 @@
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Iterativas 08 n</h1>
+    <h1 class="h3 mb-0 text-gray-800">Calculo Notas</h1>
 
 </div>
 <!-- Content Row -->
@@ -85,7 +85,7 @@
             <form action="./?sec=iterativas08" method="post">
                 <div class="mb-3 col-12">
                     <label for="textarea">Inserte un json</label>
-                    <textarea class="form-control" id="json" name="json" rows="30"><?php echo $data['input_json'] ?? '';?></textarea>
+                    <textarea class="form-control" id="json" name="json" rows="10"><?php echo $data['input_json'] ?? '';?></textarea>
                     <p class = "text-danger small" ><?php echo $data['errors']['json'] ?? '' ;?></p>
                 </div>
                 <div class="mb-3">

@@ -147,5 +147,5 @@ function calculeArray($json_array) : array
    return $_resultado;
 }
 include 'views/templates/header.php';
-include 'views/iterativas08.view.php';
+include 'views/calculoNotasIgnacio.view.php';
 include 'views/templates/footer.php';
