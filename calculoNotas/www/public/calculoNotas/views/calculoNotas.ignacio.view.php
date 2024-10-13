@@ -18,6 +18,11 @@
 
                         text-align: center;
                     }
+                    #myLists ul{
+                        border:3px solid brown;
+                        border-radius:22px;
+                        list-style: none;
+                    }
                 </style>
                 <table>
                     <thead>
@@ -35,16 +40,16 @@
                             número de aprobados
                         </th>
                         <th>
-                            nota más alta
-                        </th>
-                        <th>
                             nota más alta(persona)
                         </th>
                         <th>
-                            nota más baja
+                            nota más alta
                         </th>
                         <th>
                             nota más baja(persona)
+                        </th>
+                        <th>
+                            nota más baja
                         </th>
                     </tr>
                     </thead>
@@ -71,6 +76,56 @@
             </div>
         </div>
     </div>
+    <div id="myLists">
+    <div class="col-12">
+        <div class="card-body">
+            <div class="list list-group-item-success">
+                <ul>
+                    <?php
+                    if(!empty($subValor['todo_aprobado'])) {
+                        echo "<h3>Alumnos que han aprobado todo:</h3>";
+                        foreach ($subValor['todo_aprobado'] as $alumno_aprobado) {
+                            echo "<li>" . $alumno_aprobado . "</li>";
+                        }
+                    }
+                    ?>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card-body">
+            <div class="list list-group-item-warning">
+                <ul>
+                    <?php
+                        if (!empty($subValor['alumnos_asignatura_suspensa'])) {
+                            echo "<h3>Alumnos que han suspendido al menos una asignatura:</h3>";
+                            foreach ($subValor['alumnos_asignatura_suspensa'] as $alumno_suspenso) {
+                                echo "<li>" . $alumno_suspenso . "</li>";
+                            }
+                        }
+                    ?>
+                </ul>
+            </div>
+        </div>
+    </div>
+        <div class="col-12">
+            <div class="card-body">
+                <div class="list list-group-item-info">
+                    <ul>
+                        <?php
+                        if (!empty($subValor['alumnos_promocionan'])) {
+                            echo "<h3>Alumnos que promocionan (alumnos que han suspendido como máximo una asignatura):</h3>";
+                            foreach ($subValor['alumnos_promocionan'] as $alumno_promociona) {
+                                echo "<li>" . $alumno_promociona . "</li>";
+                            }
+                        }
+                        ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
     <?php
     }
     ?>
@@ -82,7 +137,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Inserte un json</h6>
         </div>
         <div class="card-body">
-            <form action="./?sec=iterativas08" method="post">
+            <form action="./?sec=calculoNotas.ignacio" method="post">
                 <div class="mb-3 col-12">
                     <label for="textarea">Inserte un json</label>
                     <textarea class="form-control" id="json" name="json" rows="10"><?php echo $data['input_json'] ?? '';?></textarea>

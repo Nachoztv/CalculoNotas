@@ -58,77 +58,63 @@ function checkform(array $data): array
     }
     return $errors;
 }
-function recorrerArray($json_array){
-    $keys = array_keys($json_array);
-    $i = 0;
-    while ($i < count($keys)) {
-        $key = $keys[$i];
-        $valor = $json_array[$key];
-            if (is_array($valor)) {
-                echo "Clave: $key";
-                foreach ($valor as $subKey => $subValor) {
-                    echo "  Subclave: $subKey, Valor: $subValor";
-                }
-
-            } else {
-                echo "Clave: $subKey ,Valor: $subValor";
-            }
-
-        $i++;
-        }
-
-}
 function calculeArray($json_array) : array
 {
-
     $keys = array_keys($json_array);
     $i = 0;
+
+    $promocionan = [];
+    $no_promocionan = [];
+    $suspensos_nombre=[];
+    $aprobados_nombre=[];
+    $suspensos_conteo = [];
     while ($i < count($keys)) {
         $key = $keys[$i];
         $valor = $json_array[$key];
         if (is_array($valor)) {
-            //echo "Clave: $key";
             $aprobados = [];
             $suspensos = [];
+
             foreach ($valor as $subKey => $subValor) {
-                //echo "Subclave: $subKey, Valor: $subValor";
-
-                    if ($subValor < 5) {
-                        $suspensos [] = $subValor;
-                        $min_score = array_search(min($suspensos), $valor);
-
-                    } else {
-                        $aprobados [] = $subValor;
-                        $max_score = array_search(max($aprobados), $valor);
-
+                if ($subValor < 5) {
+                    $suspensos [] = $subValor;
+                    if (!in_array($subKey, $suspensos_nombre)) {
+                        $suspensos_nombre [] = $subKey;
 
                     }
+                    $suspensos_conteo[$subKey] = (isset($suspensos_conteo[$subKey]) ? $suspensos_conteo[$subKey] : 0) + 1;
+                    $min_score = array_search(min($suspensos), $valor);
 
+                } else {
+                    $aprobados [] = $subValor;
+                    if (!in_array($subKey, $aprobados_nombre) && !in_array($subKey, $suspensos_nombre)) {
+                        $aprobados_nombre [] = $subKey;
+
+                    }
+                    $max_score = array_search(max($aprobados), $valor);
+                }
             }
-            /*//aprobados y suspensos
-            echo "<br>";
-            echo print_r($suspensos);
-            echo "<br>";
-            echo count($suspensos);
-            echo "<br>";
-            echo print_r($aprobados);
-            echo "<br>";
-            echo count($aprobados);
-            echo "<br>";
-            echo $max_score;
-            echo "<br>";
-            echo $min_score;
-            echo "<br>";
-*/
-            //nota media
-            $suma = array_sum($valor);
-            $total = count($valor);
-            $media = !empty($valor) ? $suma / $total : '-';;
-            //var_dump($media);
-
-
+            foreach ($suspensos_conteo as $alumno => $conteo) {
+                if ($conteo <= 1 && !in_array($alumno, $promocionan)) {
+                    $promocionan[] = $alumno;
+                }
+            }
+            foreach ($aprobados_nombre as $alumno) {
+                if (!in_array($alumno, $promocionan)) {
+                    $promocionan[] = $alumno;
+                }
+            }
         }
-        $_resultado [$key]= [
+        //var_dump($suspensos_nombre);
+        var_dump($promocionan);
+
+        //nota media
+        $suma = array_sum($valor);
+        $total = count($valor);
+        $media = !empty($valor) ? $suma / $total : '-';;
+
+
+        $_resultado [$key] = [
             'media' => $media,
             'suspensos' => count($suspensos),
             'aprobados' => count($aprobados),
@@ -139,13 +125,19 @@ function calculeArray($json_array) : array
             'min' => [
                 'alumnos' => $min_score,
                 'notas' => min($suspensos)
-            ]
+            ],
+            'todo_aprobado' => array_diff($aprobados_nombre, $suspensos_nombre),
+            'alumnos_asignatura_suspensa' => $suspensos_nombre,
+            'alumnos_promocionan' => array_unique($promocionan)
+            /*  'alumnos_no_promocionan' =>
+  */
         ];
         $i++;
 
     }
    return $_resultado;
 }
+
 include 'views/templates/header.php';
-include 'views/calculoNotasIgnacio.view.php';
+include 'views/calculoNotas.ignacio.view.php';
 include 'views/templates/footer.php';
