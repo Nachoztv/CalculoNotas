@@ -125,6 +125,22 @@
                 </div>
             </div>
         </div>
+        <div class="col-12">
+            <div class="card-body">
+                <div class="list list-group-item-danger">
+                    <ul>
+                        <?php
+                        if (!empty($subValor['alumnos_no_promocionan'])) {
+                            echo "<h3>Alumnos que no promocionan (alumnos que han suspendido 2 o más asignaturas)</h3>";
+                            foreach ($subValor['alumnos_no_promocionan'] as $alumno_no_promociona) {
+                                echo "<li>" . $alumno_no_promociona . "</li>";
+                            }
+                        }
+                        ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
     <?php
     }
