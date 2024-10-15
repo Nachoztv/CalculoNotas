@@ -1,66 +1,71 @@
 <?php
-
 declare(strict_types=1);
 $data = [];
 if (isset($_POST['enviar'])) {
-    //comprobar
+    $data['errors']= checkForm($_POST['json']);
+    $data['input']['json'] = filter_var($_POST['json'], FILTER_SANITIZE_SPECIAL_CHARS);
 
-    $errors= checkform($_POST);
-    $data['input_json'] = filter_var($_POST['json'], FILTER_SANITIZE_SPECIAL_CHARS);
-
-if (count($errors) > 0) {
-    $data['errors'] = $errors;
+if (empty($data['errors'])) {
+    $json_array = json_decode($_POST["json"], true);
+    $data['resultado'] = calculeArray($json_array);
 }else{
-    $json_array = json_decode($_POST["json"],true);
-   $data['resultado'] = calculeArray($json_array);
+    $data['errors']['json'] = $data['errors'];
 }
 
-    }
 
-function checkform(array $data): array
+    }
+function checkForm(string $json) : array
 {
     $errors = [];
-    $json_array = json_decode($_POST["json"],true);
-    if (empty($json_array)) {
-        $errors['json'] = 'Inserte un valor en este campo';
-    }elseif (is_null($json_array)) {
-        $errors['json'] = 'Inserte un array en este campo';
-    }elseif (!is_array($json_array)) {
-        $errors['json'] = 'Inserte un array en este campo';
-    }else {
-        $erroresFormato=[];
-        foreach ($json_array as $asignatura => $alumnos) {
-            if (!is_string($asignatura) || mb_strlen($asignatura) < 1) {
-                $erroresFormato[]="'$asignatura' no es un nombre de asignatura válido";
+    if(empty($json))
+    {
+        $errors['json'][] = 'Inserte un json a analizar';
+    }
+    else{
+        $json_array = json_decode($json, true);
+        if(is_null($json_array))
+        {
+            $errors['json'][] = 'El texto introducido no es un JSON bien formado';
+        }
+        else
+        {
+            if(!is_array($json_array)){
+                $errors['json'][] = 'El Json no contiene un array de materias';
             }
-            if (!is_string($alumnos)) {
-                $erroresFormato[]= "'$asignatura' no contiene un array de alumnos";
-            }else{
-                foreach ($alumnos as $alumno => $nota) {
-                    if (!is_string($alumno) || mb_strlen($alumno) < 1) {
-                        $erroresFormato[] ="El alumno'$alumno' de la asignatura '$asignatura' no es un nombre de alumno válido";
+            else{
+                foreach($json_array as $asignatura => $alumnos)
+                {
+                    if(!is_string($asignatura) || mb_strlen(trim($asignatura)) < 1){
+                        $errors['json'][] = "'$asignatura' no es un nombre de asignatura válido";
                     }
-                    if (!is_numeric($nota)){
-                        $erroresFormato[]="'$nota' no es un numero";
-                    }elseif ($nota < 0 || $nota > 10){
-                        $erroresFormato[]="La nota '$nota' del almuno '$alumno en la asignatura '$asignatura'";
+                    if(!is_array($alumnos)){
+                        $errors['json'][] = "'$asignatura' no contiene un array de alumnos";
                     }
-
-                }if (!empty($erroresFormato)) {
-                    $errors['json'] = $erroresFormato;
-            }
+                    else{
+                        foreach($alumnos as $alumno => $nota){
+                            if(!is_string($alumno) || mb_strlen(trim($alumno)) < 1){
+                                $errors['json'][] = "El alumno '$alumno' de la asignatura '$asignatura' no es un nombre de alumno válido";
+                            }
+                            if(!is_numeric($nota)){
+                                $errors['json'][] = "La nota '$nota' del alumno '$alumno' en la asignatura '$asignatura' no es un número";
+                            }
+                            else if($nota < 0 || $nota > 10)
+                            {
+                                $errors['json'][] = "La nota '$nota' del alumno '$alumno' en la asignatura '$asignatura' no tiene un valor entre 0 y 10";
+                            }
+                        }
+                    }
+                }
             }
         }
     }
     return $errors;
 }
+
 function calculeArray($json_array) : array
 {
     $keys = array_keys($json_array);
     $i = 0;
-
-    $promocionan = [];
-    $no_promocionan = [];
     $suspensos_nombre=[];
     $aprobados_nombre=[];
     $suspensos_conteo = [];
@@ -73,17 +78,14 @@ function calculeArray($json_array) : array
             $suspensos = [];
 
             foreach ($valor as $subKey => $subValor) {
+                if (!isset($suspensos_conteo[$subKey])) {
+                    $suspensos_conteo[$subKey] = 0;
+                }
                 if ($subValor < 5) {
-                    if (!isset($suspensos_conteo[$subKey])) {
-                        $suspensos_conteo[$subKey] = 0;
-                    }
                     $suspensos [] = $subValor;
                     if (!in_array($subKey, $suspensos_nombre)) {
                         $suspensos_nombre [] = $subKey;
 
-                    }
-                    if (!isset($susspensos_conteo[$subKey])) {
-                        $susspensos_conteo[$subKey] = 0;
                     }
                     $suspensos_conteo[$subKey] ++;
                     $min_score = array_search(min($suspensos), $valor);
@@ -102,18 +104,25 @@ function calculeArray($json_array) : array
         $total = count($valor);
         $media = !empty($valor) ? $suma / $total : '-';;
 
+        $apruebanTodo = [];
+        $hanSuspendido = [];
+        $noPromocionan = [];
+        $promocionan = [];
+
 
         foreach ($suspensos_conteo as $alumno => $num_suspensos) {
-            if ($num_suspensos >= 2) {
-                if (!in_array($alumno, $no_promocionan)) {
-                    $no_promocionan[] = $alumno;
-                }
+            if($num_suspensos === 0){
+                $apruebanTodo[] = $alumno;
+                $promocionan [] = $alumno;
             }
-        }
-
-        foreach ($valor as $subKey => $subValor) {
-                if (!in_array($subKey, $no_promocionan)) {
-                    $promocionan[] = $subKey;
+            else{
+                $hanSuspendido[] = $alumno;
+                if ($num_suspensos <= 1) {
+                    $promocionan [] = $alumno;
+                }
+                if($num_suspensos > 1){
+                    $noPromocionan[] = $alumno;
+                }
             }
         }
 
@@ -130,10 +139,10 @@ function calculeArray($json_array) : array
                 'alumnos' => $min_score,
                 'notas' => min($suspensos)
             ],
-            'todo_aprobado' => array_diff($aprobados_nombre, $suspensos_nombre),
-            'alumnos_asignatura_suspensa' => $suspensos_nombre,
-            'alumnos_promocionan' => array_unique($promocionan),
-            'alumnos_no_promocionan' =>array_unique($no_promocionan)
+            'todo_aprobado' => $apruebanTodo,
+            'alumnos_asignatura_suspensa' => $hanSuspendido,
+            'alumnos_promocionan' => $promocionan,
+            'alumnos_no_promocionan' =>$noPromocionan
         ];
         $i++;
 

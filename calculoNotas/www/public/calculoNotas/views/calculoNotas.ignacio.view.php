@@ -27,7 +27,7 @@
                 <table>
                     <thead>
                     <tr>
-                        <th style="width:12.5 %">
+                        <th>
                             Asignatura
                         </th>
                         <th>
@@ -82,7 +82,7 @@
             <div class="list list-group-item-success">
                 <ul>
                     <?php
-                    if(!empty($subValor['todo_aprobado'])) {
+                    if (!empty($subValor['todo_aprobado'])) {
                         echo "<h3>Alumnos que han aprobado todo:</h3>";
                         foreach ($subValor['todo_aprobado'] as $alumno_aprobado) {
                             echo "<li>" . $alumno_aprobado . "</li>";
@@ -156,8 +156,12 @@
             <form action="./?sec=calculoNotas.ignacio" method="post">
                 <div class="mb-3 col-12">
                     <label for="textarea">Inserte un json</label>
-                    <textarea class="form-control" id="json" name="json" rows="10"><?php echo $data['input_json'] ?? '';?></textarea>
-                    <p class = "text-danger small" ><?php echo $data['errors']['json'] ?? '' ;?></p>
+                    <textarea class="form-control" id="json" name="json" rows="10"><?php echo isset($data['input']['json']) ? $data['input']['json'] : ''; ?></textarea>
+                    <p class = "text-danger small" ><?php if(isset($data['errors']['json'])) foreach($data['errors']['json'] as $error){if (is_array($error)){
+                        echo implode("<br>", $error) . '<br/>';
+                        }else{
+                        echo $error . '<br/>';
+                        }}?></p>
                 </div>
                 <div class="mb-3">
                     <input type="submit" value="Enviar" name="enviar" class="btn btn-primary">
