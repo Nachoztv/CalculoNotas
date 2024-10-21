@@ -42,18 +42,23 @@ function checkForm(string $json) : array
                         $errors['json'][] = "'$asignatura' no contiene un array de alumnos";
                     }
                     else{
-                        foreach($alumnos as $alumno => $nota){
-                            if(!is_string($alumno) || mb_strlen(trim($alumno)) < 1){
+                        foreach($alumnos as $alumno => $notas) {
+                            if (!is_string($alumno) || mb_strlen(trim($alumno)) < 1) {
                                 $errors['json'][] = "El alumno '$alumno' de la asignatura '$asignatura' no es un nombre de alumno válido";
                             }
-                            if(!is_numeric($nota)){
-                                $errors['json'][] = "La nota '$nota' del alumno '$alumno' en la asignatura '$asignatura' no es un número";
-                            }
-                            else if($nota < 0 || $nota > 10)
-                            {
-                                $errors['json'][] = "La nota '$nota' del alumno '$alumno' en la asignatura '$asignatura' no tiene un valor entre 0 y 10";
+                            if (!is_array($notas)) {
+                                $errors['json'][] = "'$alumno' no contiene un array de notas en la asignatura '$asignatura'";
+                            } else {
+                                foreach ($notas as $nota) {
+                                    if (!is_numeric($nota)) {
+                                        $errors['json'][] = "La nota '$nota' del alumno '$alumno' en la asignatura '$asignatura' no es un número";
+                                    } else if ($nota < 0 || $nota > 10) {
+                                        $errors['json'][] = "La nota '$nota' del alumno '$alumno' en la asignatura '$asignatura' no tiene un valor entre 0 y 10";
+                                    }
+                                }
                             }
                         }
+
                     }
                 }
             }
@@ -64,6 +69,85 @@ function checkForm(string $json) : array
 
 function calculeArray($json_array) : array
 {
+    $suspensos_nombre = [];
+    $aprobados_nombre = [];
+    $suspensos_conteo = [];
+    $_resultado = [];
+    foreach ($json_array as $asignatura => $alumnos) {
+        $aprobados = [];
+        $suspensos = [];
+        foreach ($alumnos as $nombre => $notas) {
+            $suma = array_sum($notas);
+            $total = count($notas);
+            $media = !empty($notas) ? $suma / $total : '-';
+
+            if (!isset($suspensos_conteo[$nombre])) {
+                $suspensos_conteo[$nombre] = 0;
+            }
+
+            if ($media < 5) {
+                $suspensos [] = $media;
+                if (!in_array($nombre, $suspensos_nombre)) {
+                    $suspensos_nombre [] = $nombre;
+
+                }
+                $suspensos_conteo[$nombre]++;
+
+
+            } else {
+                $aprobados [] = $media;
+                if (!in_array($nombre, $aprobados_nombre) && !in_array($nombre, $suspensos_nombre)) {
+                    $aprobados_nombre [] = $nombre;
+                }
+
+            }
+        }
+        $min_score = array_search(min($alumnos), $alumnos);
+        $max_score = array_search(max($alumnos), $alumnos);
+        $media_asignatura = array_sum(array_merge($aprobados, $suspensos)) / count($alumnos);
+        $apruebanTodo = [];
+        $hanSuspendido = [];
+        $noPromocionan = [];
+        $promocionan = [];
+
+        foreach ($suspensos_conteo as $alumno => $num_suspensos) {
+            if ($num_suspensos === 0) {
+                $apruebanTodo[] = $alumno;
+                $promocionan [] = $alumno;
+            } else {
+                $hanSuspendido[] = $alumno;
+                if ($num_suspensos <= 1) {
+                    $promocionan [] = $alumno;
+                }
+                if ($num_suspensos > 1) {
+                    $noPromocionan[] = $alumno;
+                }
+            }
+        }
+
+
+
+        $_resultado [$asignatura] = [
+            'media' => $media_asignatura,
+            'suspensos' => count($suspensos),
+            'aprobados' => count($aprobados),
+            'max' => [
+                'alumnos' => $max_score,
+                'notas' => round(max($aprobados),2)
+            ],
+            'min' => [
+                'alumnos' => $min_score,
+                'notas' => round(min($suspensos),2)
+            ],
+            'todo_aprobado' => $apruebanTodo,
+            'alumnos_asignatura_suspensa' => $hanSuspendido,
+            'alumnos_promocionan' => $promocionan,
+            'alumnos_no_promocionan' => $noPromocionan
+        ];
+
+    }
+
+    /*
     $keys = array_keys($json_array);
     $i = 0;
     $suspensos_nombre=[];
@@ -78,11 +162,14 @@ function calculeArray($json_array) : array
             $suspensos = [];
 
             foreach ($valor as $subKey => $subValor) {
+                $suma = array_sum($valor);
+                $total = count($valor);
+                $media = !empty($valor) ? $suma / $total : '-';;
                 if (!isset($suspensos_conteo[$subKey])) {
                     $suspensos_conteo[$subKey] = 0;
                 }
                 if ($subValor < 5) {
-                    $suspensos [] = $subValor;
+                    $suspensos [] = $media;
                     if (!in_array($subKey, $suspensos_nombre)) {
                         $suspensos_nombre [] = $subKey;
 
@@ -91,7 +178,7 @@ function calculeArray($json_array) : array
                     $min_score = array_search(min($suspensos), $valor);
 
                 } else {
-                    $aprobados [] = $subValor;
+                    $aprobados [] = $media;
                     if (!in_array($subKey, $aprobados_nombre) && !in_array($subKey, $suspensos_nombre)) {
                         $aprobados_nombre [] = $subKey;
                     }
@@ -100,53 +187,10 @@ function calculeArray($json_array) : array
             }
         }
 
-        $suma = array_sum($valor);
-        $total = count($valor);
-        $media = !empty($valor) ? $suma / $total : '-';;
-
-        $apruebanTodo = [];
-        $hanSuspendido = [];
-        $noPromocionan = [];
-        $promocionan = [];
+        $media_asignatura = count($valor) > 0 ? array_sum(array_merge($aprobados, $suspensos)) / count($valor) : '-';*/
 
 
-        foreach ($suspensos_conteo as $alumno => $num_suspensos) {
-            if($num_suspensos === 0){
-                $apruebanTodo[] = $alumno;
-                $promocionan [] = $alumno;
-            }
-            else{
-                $hanSuspendido[] = $alumno;
-                if ($num_suspensos <= 1) {
-                    $promocionan [] = $alumno;
-                }
-                if($num_suspensos > 1){
-                    $noPromocionan[] = $alumno;
-                }
-            }
-        }
 
-
-        $_resultado [$key] = [
-            'media' => $media,
-            'suspensos' => count($suspensos),
-            'aprobados' => count($aprobados),
-            'max' => [
-                'alumnos' => $max_score,
-                'notas' => max($aprobados)
-            ],
-            'min' => [
-                'alumnos' => $min_score,
-                'notas' => min($suspensos)
-            ],
-            'todo_aprobado' => $apruebanTodo,
-            'alumnos_asignatura_suspensa' => $hanSuspendido,
-            'alumnos_promocionan' => $promocionan,
-            'alumnos_no_promocionan' =>$noPromocionan
-        ];
-        $i++;
-
-    }
    return $_resultado;
 }
 

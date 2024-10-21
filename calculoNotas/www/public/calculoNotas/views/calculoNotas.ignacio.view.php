@@ -9,7 +9,6 @@
     <div class="col-12">
             <!--class="table table-striped"-->
         <div class="card-body">
-            <div class="table table-striped">
                 <?php
                 if(isset($data['resultado'] )){?>
                 <style>
@@ -18,13 +17,8 @@
 
                         text-align: center;
                     }
-                    #myLists ul{
-                        border:3px solid brown;
-                        border-radius:22px;
-                        list-style: none;
-                    }
                 </style>
-                <table>
+                <table class="table table-striped">
                     <thead>
                     <tr>
                         <th>
@@ -34,19 +28,13 @@
                             nota media
                         </th>
                         <th>
-                            número de suspenso
-                        </th>
-                        <th>
                             número de aprobados
                         </th>
                         <th>
-                            nota más alta(persona)
+                            número de suspenso
                         </th>
                         <th>
                             nota más alta
-                        </th>
-                        <th>
-                            nota más baja(persona)
                         </th>
                         <th>
                             nota más baja
@@ -58,28 +46,22 @@
                     foreach($data['resultado'] as $subKey => $subValor){
                 echo "<tr>";
                 echo "<td>".$subKey."</td>";
-                echo "<td>".number_format($subValor['media'],2,',')."</td>";
-                echo "<td>".$subValor['suspensos']."</td>";
+                echo "<td>".((is_numeric($subValor['media'])) ? number_format($subValor['media'], 2, ',') : $subValor['media'])."</td>";
                 echo "<td>".$subValor['aprobados']."</td>";
-                    foreach($subValor['max'] as $subMax => $subMaxValor) {
-                        echo "<td>" . $subMaxValor . "</td>";
-                    }
-                        foreach($subValor['min'] as $subMin => $subMinValor) {
-                            echo "<td>" . $subMinValor . "</td>";
-                        }
-                echo "<tr>";
+                        echo "<td>".$subValor['suspensos']."</td>";
+                echo "<td>".$subValor['max']['alumnos'].":".$subValor['max']['notas']."</td>";
+                echo "<td>".$subValor['min']['alumnos'].":".$subValor['min']['notas']."</td>";
+                echo "</tr>";
                     }
                         ?>
 
                     </tbody>
                 </table>
             </div>
-        </div>
     </div>
-    <div id="myLists">
-    <div class="col-12">
+    <div class="col-12 col-lg-6">
         <div class="card-body">
-            <div class="list list-group-item-success">
+            <div class="alert alert-success">
                 <ul>
                     <?php
                     if (!empty($subValor['todo_aprobado'])) {
@@ -93,9 +75,9 @@
             </div>
         </div>
     </div>
-    <div class="col-12">
+    <div class="col-12 col-lg-6">
         <div class="card-body">
-            <div class="list list-group-item-warning">
+            <div class="alert alert-warning">
                 <ul>
                     <?php
                         if (!empty($subValor['alumnos_asignatura_suspensa'])) {
@@ -109,9 +91,9 @@
             </div>
         </div>
     </div>
-        <div class="col-12">
+        <div class="col-12 col-lg-6">
             <div class="card-body">
-                <div class="list list-group-item-info">
+                <div class="alert alert-info">
                     <ul>
                         <?php
                         if (!empty($subValor['alumnos_promocionan'])) {
@@ -125,9 +107,9 @@
                 </div>
             </div>
         </div>
-        <div class="col-12">
+        <div class="col-12 col-lg-6">
             <div class="card-body">
-                <div class="list list-group-item-danger">
+                <div class="alert alert-danger">
                     <ul>
                         <?php
                         if (!empty($subValor['alumnos_no_promocionan'])) {
@@ -141,7 +123,6 @@
                 </div>
             </div>
         </div>
-    </div>
     <?php
     }
     ?>
