@@ -7,17 +7,9 @@
 <div class="row">
 
     <div class="col-12">
-            <!--class="table table-striped"-->
         <div class="card-body">
                 <?php
                 if(isset($data['resultado'] )){?>
-                <style>
-                    table, th, td {
-                        border: 1px solid black;
-
-                        text-align: center;
-                    }
-                </style>
                 <table class="table table-striped">
                     <thead>
                     <tr>
@@ -31,7 +23,7 @@
                             número de aprobados
                         </th>
                         <th>
-                            número de suspenso
+                            número de suspensos
                         </th>
                         <th>
                             nota más alta
@@ -48,7 +40,7 @@
                 echo "<td>".$subKey."</td>";
                 echo "<td>".((is_numeric($subValor['media'])) ? number_format($subValor['media'], 2, ',') : $subValor['media'])."</td>";
                 echo "<td>".$subValor['aprobados']."</td>";
-                        echo "<td>".$subValor['suspensos']."</td>";
+                echo "<td>".$subValor['suspensos']."</td>";
                 echo "<td>".$subValor['max']['alumnos'].":".$subValor['max']['notas']."</td>";
                 echo "<td>".$subValor['min']['alumnos'].":".$subValor['min']['notas']."</td>";
                 echo "</tr>";
